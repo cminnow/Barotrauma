@@ -13,6 +13,7 @@ using Barotrauma.Steam;
 using System.Xml.Linq;
 using System.Threading;
 using Barotrauma.Extensions;
+using System.Globalization;
 
 namespace Barotrauma.Networking
 {
@@ -111,6 +112,8 @@ namespace Barotrauma.Networking
         public int QueryPort => serverSettings?.QueryPort ?? 0;
 
         public NetworkConnection OwnerConnection { get; private set; }
+        public object WaypointType { get; private set; }
+
         private readonly int? ownerKey;
         private readonly UInt64? ownerSteamId;
 
@@ -203,7 +206,7 @@ namespace Barotrauma.Networking
 
             GameMain.NetLobbyScreen.Select();
             GameMain.NetLobbyScreen.RandomizeSettings();
-            if (!string.IsNullOrEmpty(serverSettings.SelectedSubmarine)) 
+            if (!string.IsNullOrEmpty(serverSettings.SelectedSubmarine))
             {
                 SubmarineInfo sub = SubmarineInfo.SavedSubmarines.FirstOrDefault(s => s.Name == serverSettings.SelectedSubmarine);
                 if (sub != null) { GameMain.NetLobbyScreen.SelectedSub = sub; }
@@ -621,7 +624,7 @@ namespace Barotrauma.Networking
             if (Timing.TotalTime > lastPingTime + 1.0)
             {
                 lastPingData ??= new byte[64];
-                for (int i=0;i<lastPingData.Length;i++)
+                for (int i = 0; i < lastPingData.Length; i++)
                 {
                     lastPingData[i] = (byte)Rand.Range(33, 126);
                 }
@@ -658,7 +661,7 @@ namespace Barotrauma.Networking
                 case ClientPacketHeader.PING_RESPONSE:
                     byte responseLen = inc.ReadByte();
                     if (responseLen != lastPingData.Length) { return; }
-                    for (int i=0;i<responseLen;i++)
+                    for (int i = 0; i < responseLen; i++)
                     {
                         byte b = inc.ReadByte();
                         if (b != lastPingData[i]) { return; }
@@ -716,7 +719,7 @@ namespace Barotrauma.Networking
                                 MultiPlayerCampaign.StartNewCampaign(localSavePath, matchingSub.FilePath, seed);
                             }
                         }
-                     }
+                    }
                     else
                     {
                         string saveName = inc.ReadString();
@@ -880,9 +883,9 @@ namespace Barotrauma.Networking
                 {
                     var spawnData = entityEvent.Data[0] as EntitySpawner.SpawnOrRemove;
                     errorLines.Add(
-                        entityEvent.ID + ": " + 
-                        (spawnData.Remove ? "Remove " : "Create ") + 
-                        spawnData.Entity.ToString() + 
+                        entityEvent.ID + ": " +
+                        (spawnData.Remove ? "Remove " : "Create ") +
+                        spawnData.Entity.ToString() +
                         " (" + spawnData.OriginalID + ", " + spawnData.Entity.ID + ")");
                 }
             }
@@ -1554,7 +1557,7 @@ namespace Barotrauma.Networking
                 outmsg.Write(client.Muted);
                 outmsg.Write(client.InGame);
                 outmsg.Write(client.Permissions != ClientPermissions.None);
-                outmsg.Write(client.Connection != OwnerConnection && 
+                outmsg.Write(client.Connection != OwnerConnection &&
                     !client.HasPermission(ClientPermissions.Ban) &&
                     !client.HasPermission(ClientPermissions.Kick) &&
                     !client.HasPermission(ClientPermissions.Unban)); //is kicking the player allowed
@@ -2048,10 +2051,251 @@ namespace Barotrauma.Networking
             LastClientListUpdateID++;
 
             roundStartTime = DateTime.Now;
+            List<string> CharacterSelection = new List<string>();
+            for (int i = 0; i < 80; i++)
+            {
+                CharacterSelection.Add("crawler");
+            }
+            for (int i = 0; i < 6; i++)
+            {
+                CharacterSelection.Add("mudraptor");
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                CharacterSelection.Add("mantis");
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                CharacterSelection.Add("hammerhead");
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                CharacterSelection.Add("tigerthresher");
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                CharacterSelection.Add("bonethresher");
+            }
+            for (int i = 0; i < 1; i++)
+            {
+                CharacterSelection.Add("Hammerheadmatriarch");
+            }
+            Random name = new Random();
+
+            int counter = 0;
+            while (GameMain.Server.GameStarted)
+            {
+                yield return new WaitForSeconds(5f);
+                counter += 5;
+                if (counter == 30)
+                {
+                    foreach (Client c in GameMain.Server.ConnectedClients)
+                    {
+                        if (c.Spectating == false || c.Character?.IsDead == false) { continue; }
+                        String selectedcharacter;
+                        int index = name.Next(CharacterSelection.Count);
+                        selectedcharacter = CharacterSelection[index];
+                        SetClientCharacter(c, SpawnCreatureNearby(selectedcharacter, 2000));
+                    }
+
+                }
+                if (counter == 60)
+                {
+                    foreach (Client c in GameMain.Server.ConnectedClients)
+                    {
+                        if (c.Spectating == false || c.Character?.IsDead == false) { continue; }
+                        String selectedcharacter;
+                        int index = name.Next(CharacterSelection.Count);
+                        selectedcharacter = CharacterSelection[index];
+                        SetClientCharacter(c, SpawnCreatureNearby(selectedcharacter, 2000));
+                    }
+
+                }
+                if (counter == 90)
+                {
+                    foreach (Client c in GameMain.Server.ConnectedClients)
+                    {
+                        if (c.Spectating == false || c.Character?.IsDead == false) { continue; }
+                        String selectedcharacter;
+                        int index = name.Next(CharacterSelection.Count);
+                        selectedcharacter = CharacterSelection[index];
+                        SetClientCharacter(c, SpawnCreatureNearby(selectedcharacter, 2000));
+                    }
+
+                }
+                if (counter == 120)
+                {
+                    foreach (Client c in GameMain.Server.ConnectedClients)
+                    {
+                        if (c.Spectating == false || c.Character?.IsDead == false) { continue; }
+                        String selectedcharacter;
+                        int index = name.Next(CharacterSelection.Count);
+                        selectedcharacter = CharacterSelection[index];
+                        SetClientCharacter(c, SpawnCreatureNearby(selectedcharacter, 2000));
+                    }
+
+                }
+                if (counter == 150)
+                {
+                    foreach (Client c in GameMain.Server.ConnectedClients)
+                    {
+                        if (c.Spectating == false || c.Character?.IsDead == false) { continue; }
+                        String selectedcharacter;
+                        int index = name.Next(CharacterSelection.Count);
+                        selectedcharacter = CharacterSelection[index];
+                        SetClientCharacter(c, SpawnCreatureNearby(selectedcharacter, 2000));
+                    }
+
+                }
+                if (counter == 180)
+                {
+                    foreach (Client c in GameMain.Server.ConnectedClients)
+                    {
+                        if (c.Spectating == false || c.Character?.IsDead == false) { continue; }
+                        String selectedcharacter;
+                        int index = name.Next(CharacterSelection.Count);
+                        selectedcharacter = CharacterSelection[index];
+                        SetClientCharacter(c, SpawnCreatureNearby(selectedcharacter, 2000));
+                    }
+
+                }
+                if (counter == 210)
+                {
+                    foreach (Client c in GameMain.Server.ConnectedClients)
+                    {
+                        if (c.Spectating == false || c.Character?.IsDead == false) { continue; }
+                        String selectedcharacter;
+                        int index = name.Next(CharacterSelection.Count);
+                        selectedcharacter = CharacterSelection[index];
+                        SetClientCharacter(c, SpawnCreatureNearby(selectedcharacter, 2000));
+                    }
+
+                }
+                if (counter == 240)
+                {
+                    foreach (Client c in GameMain.Server.ConnectedClients)
+                    {
+                        if (c.Spectating == false || c.Character?.IsDead == false) { continue; }
+                        String selectedcharacter;
+                        int index = name.Next(CharacterSelection.Count);
+                        selectedcharacter = CharacterSelection[index];
+                        SetClientCharacter(c, SpawnCreatureNearby(selectedcharacter, 2000));
+                    }
+                }
+                if (counter == 270)
+                {
+                    foreach (Client c in GameMain.Server.ConnectedClients)
+                    {
+                        if (c.Spectating == false || c.Character?.IsDead == false) { continue; }
+                        String selectedcharacter;
+                        int index = name.Next(CharacterSelection.Count);
+                        selectedcharacter = CharacterSelection[index];
+                        SetClientCharacter(c, SpawnCreatureNearby(selectedcharacter, 2000));
+                    }
+                }
+                if (counter == 300)
+                {
+                    foreach (Client c in GameMain.Server.ConnectedClients)
+                    {
+                        if (c.Spectating == false || c.Character?.IsDead == false) { continue; }
+                        String selectedcharacter;
+                        int index = name.Next(CharacterSelection.Count);
+                        selectedcharacter = CharacterSelection[index];
+                        SetClientCharacter(c, SpawnCreatureNearby(selectedcharacter, 2000));
+                    }
+                }
+                if (counter == 310)
+                {
+                    if (Vector2.Distance(Submarine.MainSubs[0].WorldPosition, Submarine.MainSubs[1].WorldPosition) > 48000)
+                    {
+                        foreach (WayPoint Dingus in WayPoint.WayPointList)
+                        {
+                            if (Dingus.SpawnType != SpawnType.Path) { continue; }
+
+                            if (Vector2.Distance(Dingus.WorldPosition, Submarine.MainSub.WorldPosition) > 24000)
+                            {
+                                continue;
+                            }
+                            if (Vector2.Distance(Dingus.WorldPosition, Submarine.MainSub.WorldPosition) < 16000)
+                            {
+                                continue;
+                            }
+
+                            Submarine.MainSubs[1].SetPosition(Dingus.WorldPosition);
+                            break;
+                        }
+
+                    }
+                    else
+                    {
+                        SendChatMessage("It aint far enough", ChatMessageType.Server);
+                    }
+                    counter = 0;
+
+                    SendChatMessage("Reset counter", ChatMessageType.Console);
+                                        
+                }
+
+            }
+
+
+
+
 
             yield return CoroutineStatus.Success;
         }
 
+        public Character SpawnCreature(Vector2 position, string type)
+        {
+            List<String> characterFiles = new List<string>();
+            foreach (ContentFile f in Barotrauma.GameMain.Instance.GetFilesOfType(ContentType.Character))
+            {
+                characterFiles.Add(f.ToString());
+            }
+            foreach (string characterFile in characterFiles)
+            {
+                if (Path.GetFileNameWithoutExtension(characterFile).ToLowerInvariant() == type.ToLowerInvariant())
+                {
+                    return Character.Create(characterFile, position, ToolBox.RandomSeed(8));
+                }
+            }
+            return null;
+        }
+        public Character SpawnCreatureNearby(String creature, float maxDistance, float minDistance = 2000)
+        {
+            List<WayPoint> wayPoints = new List<WayPoint>();
+            WayPoint selectedWaypoint;
+
+        START:
+
+            foreach (WayPoint wp in WayPoint.WayPointList.Where(wp => Vector2.Distance(Submarine.MainSub.WorldPosition, wp.WorldPosition) < maxDistance && Vector2.Distance(Submarine.MainSub.WorldPosition, wp.WorldPosition) > minDistance))
+            {
+                if (wp.Submarine != null) continue;
+
+                foreach (Submarine sub in Submarine.Loaded)
+                {
+                    if (sub.GetHulls(true).Any(c => c.WorldRect.ContainsWorld(wp.WorldPosition)))
+                    {
+                        continue;
+                    }
+                }
+
+                wayPoints.Add(wp);
+            }
+
+            if (wayPoints.Count == 0)
+            {
+                maxDistance += 50;
+                goto START;
+            }
+
+            var random = new Random();
+            int index = random.Next(wayPoints.Count);
+            selectedWaypoint = wayPoints[index];
+
+
+            return SpawnCreature(selectedWaypoint.WorldPosition, creature);
+        }
         private void SendStartMessage(int seed, string levelSeed, GameSession gameSession, List<Client> clients, bool includesFinalize)
         {
             foreach (Client client in clients)
@@ -2147,10 +2391,10 @@ namespace Barotrauma.Networking
             var traitorEndMessage = TraitorManager?.GetEndMessage() ?? "";
             var traitorEndMessageStart = traitorEndMessage.LastIndexOf('/') + 1;
 
-            var roundSummary = TextManager.FormatServerMessage("RoundSummaryRoundHasEnded", new string[] {"[traitorinfo]"}, new string[] {"[endsummary.traitorinfo]" /*TraitorManager != null ? TraitorManager.GetEndMessage() : ""*/});
+            var roundSummary = TextManager.FormatServerMessage("RoundSummaryRoundHasEnded", new string[] { "[traitorinfo]" }, new string[] { "[endsummary.traitorinfo]" /*TraitorManager != null ? TraitorManager.GetEndMessage() : ""*/});
             var roundSummaryStart = roundSummary.LastIndexOf('/') + 1;
 
-            string endMessage = string.Join("/",  new[] {
+            string endMessage = string.Join("/", new[] {
                 traitorEndMessage.Substring(0, traitorEndMessageStart),
                 "[endsummary.traitorinfo]=" + traitorEndMessage.Substring(traitorEndMessageStart),
                 roundSummary.Substring(0, roundSummaryStart),
@@ -2681,7 +2925,7 @@ namespace Barotrauma.Networking
                     modifiedMessage,
                     (ChatMessageType)type,
                     senderCharacter,
-                    senderClient, 
+                    senderClient,
                     changeType);
 
                 SendDirectChatMessage(chatMsg, client);
@@ -2950,7 +3194,7 @@ namespace Barotrauma.Networking
                 {
                     newCharacter.LastNetworkUpdateID = client.Character.LastNetworkUpdateID;
                 }
-                
+
                 if (newCharacter.Info != null && newCharacter.Info.Character == null)
                 {
                     newCharacter.Info.Character = newCharacter;
@@ -3081,7 +3325,7 @@ namespace Barotrauma.Networking
                     //find the client that wants the job the most, or force it to random client if none of them want it
                     Client assignedClient = FindClientWithJobPreference(unassigned, jobPrefab, true);
 
-                    assignedClient.AssignedJob = 
+                    assignedClient.AssignedJob =
                         assignedClient.JobPreferences.FirstOrDefault(jp => jp.First == jobPrefab) ??
                         new Pair<JobPrefab, int>(jobPrefab, 0);
 
@@ -3181,7 +3425,7 @@ namespace Barotrauma.Networking
                     {
                         c.AssignedJob = preferredJob;
                         assignedClientCount[preferredJob.First]++;
-                        break;                        
+                        break;
                     }
                 }
                 else //none of the client's preferred jobs available, choose a random job
@@ -3238,10 +3482,10 @@ namespace Barotrauma.Networking
                     unassignedBots[0].Job = new Job(jobPrefab, variant);
                     assignedPlayerCount[jobPrefab]++;
                     unassignedBots.Remove(unassignedBots[0]);
-                    canAssign = true;                    
+                    canAssign = true;
                 }
             } while (unassignedBots.Count > 0 && canAssign);
-            
+
             //find a suitable job for the rest of the bots
             foreach (CharacterInfo c in unassignedBots)
             {
@@ -3309,7 +3553,7 @@ namespace Barotrauma.Networking
             {
                 retVal += "color:#ff9900;";
             }
-            retVal += "metadata:" + (client.SteamID!=0 ? client.SteamID.ToString() : client.ID.ToString()) + "‖" + (name ?? client.Name) + "‖end‖";
+            retVal += "metadata:" + (client.SteamID != 0 ? client.SteamID.ToString() : client.ID.ToString()) + "‖" + (name ?? client.Name) + "‖end‖";
             return retVal;
         }
 
