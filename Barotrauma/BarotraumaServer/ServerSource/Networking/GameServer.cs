@@ -2404,7 +2404,7 @@ namespace Barotrauma.Networking
             oldPlayers = new List<Client>();
 
             foreach (Client c in GameMain.Server.ConnectedClients.Where(c => (!c.Character?.IsDead ?? true)
-            || c.SpectateOnly)) { oldPlayers.Add(c); }
+            || c.SpectateOnly || !c.InGame)) { oldPlayers.Add(c); }
 
             GameMain.Server.SendChatMessage("Type a command with a semicolon into the chatbox to use it. Available chat commands " +
                 "include: help; suicide; findcoal; findsep; stopspec; startspec;. Try help; to learn more.", ChatMessageType.Error);
@@ -2413,7 +2413,7 @@ namespace Barotrauma.Networking
             {
                 yield return new WaitForSeconds(5);
                 counter += 5;
-                if (counter == 10)
+                if (counter == 120)
                 {
                     counter = 0;
                     if (GameMain.Server.ConnectedClients.Any(c => (c.Character?.IsDead ?? true) && !c.SpectateOnly && c.InGame))
@@ -3121,6 +3121,9 @@ namespace Barotrauma.Networking
                             senderClient.SpectateOnly = true;
                             SendDirectChatMessage("You've been added to the spectators!", senderClient, ChatMessageType.MessageBox);
                             GameMain.Server.SendChatMessage(senderClient.Name + " has joined spectators!", ChatMessageType.Error);
+                            if (!oldPlayers.Any(c => senderClient == c)) {
+                                oldPlayers.Add(senderClient);
+                            }
                         }
                         break;
                     case "stopspec":
